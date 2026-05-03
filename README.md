@@ -2,7 +2,7 @@
   <img src="https://img.shields.io/badge/Vigil-v2.0-blueviolet?style=for-the-badge" alt="Vigil Badge"/>
   <img src="https://img.shields.io/badge/Flask-3.1-green?style=for-the-badge&logo=flask" alt="Flask Badge"/>
   <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React Badge"/>
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker Badge"/>
+  <img src="https://img.shields.io/badge/Vercel-Deployed-000?style=for-the-badge&logo=vercel" alt="Vercel Badge"/>
 </p>
 
 # 🛡️ Vigil — Website Uptime Monitoring System
@@ -22,7 +22,7 @@
 - [Database Schema](#-database-schema)
 - [API Documentation](#-api-documentation)
 - [Getting Started](#-getting-started)
-- [Docker Setup](#-docker-setup)
+- [Deployment](#-deployment)
 - [License](#-license)
 
 ---
@@ -36,7 +36,7 @@
 | 3  | Youssef Ali Ibrahim         | Backend Developer     | 20220415    |
 | 4  | Nour ElDin Mahmoud Saad     | Database Engineer     | 20220356    |
 | 5  | Malak Tarek Abdallah        | UI/UX Designer        | 20220274    |
-| 6  | Ahmed Mostafa Sayed         | DevOps / Docker       | 20220045    |
+| 6  | Ahmed Mostafa Sayed         | DevOps Engineer       | 20220045    |
 | 7  | Sara Hesham Mohamed         | QA / Documentation    | 20220331    |
 
 ---
@@ -49,8 +49,7 @@
 | Backend    | Python 3.12, Flask 3.1, SQLAlchemy   |
 | Database   | SQLite 3 (file-based relational DB)  |
 | Auth       | JWT (PyJWT) with Bearer Tokens       |
-| DevOps     | Docker, Docker Compose               |
-| Server     | Gunicorn (WSGI Production Server)    |
+| Deployment | Vercel (Serverless Python Runtime)   |
 
 ---
 
@@ -58,17 +57,15 @@
 
 ```
 Vigil-v2-flask/
+├── api/
+│   └── index.py                # Vercel serverless entry point
 ├── backend/
 │   ├── app.py                  # Flask application (models + routes)
-│   ├── requirements.txt        # Python dependencies
-│   └── Dockerfile              # Backend container image
-├── frontend/
-│   ├── src/                    # React components & pages
-│   ├── package.json            # Node dependencies
-│   └── Dockerfile              # Frontend container image
-├── docker-compose.yml          # Multi-service orchestration
+│   └── requirements.txt        # Python dependencies
+├── requirements.txt            # Root deps (for Vercel)
+├── vercel.json                 # Vercel routing & build config
 ├── .gitignore
-└── README.md                   # This file
+└── README.md
 ```
 
 ---
@@ -198,24 +195,16 @@ graph TB
 ## 🏗 System Architecture
 
 ```mermaid
-graph TB
-    subgraph "Docker Compose"
-        subgraph "vigil-frontend :5173"
-            FE["React + Tailwind<br/>Node 20 Alpine<br/>Vite Dev Server"]
-        end
-        subgraph "vigil-backend :5000"
-            BE["Flask API<br/>Python 3.12 Slim<br/>Gunicorn - 4 workers"]
-        end
-        subgraph "Volume: backend-data"
-            VOL[("vigil.db<br/>SQLite")]
-        end
+graph LR
+    Browser["🌐 Browser"] -->|"HTTPS"| Vercel["☁️ Vercel Edge Network"]
+
+    subgraph "Vercel Serverless"
+        Entry["api/index.py"] --> Flask["Flask App<br/>(backend/app.py)"]
+        Flask -->|"SQLAlchemy ORM"| DB[("SQLite<br/>/tmp/vigil.db")]
     end
 
-    FE -->|"depends_on"| BE
-    BE -->|"SQLAlchemy ORM"| VOL
-
-    Browser["🌐 Browser"] -->|":5173"| FE
-    Browser -->|":5000/api"| BE
+    Vercel --> Entry
+    Flask -->|"JSON + JWT"| Browser
 ```
 
 ---
@@ -374,15 +363,15 @@ Authorization: Bearer <your_jwt_token>
 
 ### Prerequisites
 
-- **Docker** & **Docker Compose** installed ([Get Docker](https://docs.docker.com/get-docker/))
+- **Python 3.12+** installed
 - **Git** for cloning the repository
 
-### Local Development (without Docker)
+### Local Development
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/vigil-v2-flask.git
-cd vigil-v2-flask
+git clone https://github.com/Abdelrahman744/Vigil-v2-flask.git
+cd Vigil-v2-flask
 
 # 2. Backend setup
 cd backend
@@ -390,47 +379,26 @@ python -m venv venv
 source venv/bin/activate        # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python app.py                   # Starts on http://localhost:5000
-
-# 3. Frontend setup (separate terminal)
-cd frontend
-npm install
-npm run dev                     # Starts on http://localhost:5173
 ```
 
 ---
 
-## 🐳 Docker Setup
+## ☁️ Deployment
 
-### Quick Start
+The backend is deployed on **Vercel** using the Python Serverless Runtime.
 
-```bash
-# Build and start all services
-docker-compose up --build
+### Environment Variables (set in Vercel Dashboard)
 
-# Run in detached (background) mode
-docker-compose up --build -d
+| Variable        | Description              |
+|-----------------|--------------------------|
+| `SECRET_KEY`    | JWT signing secret       |
 
-# Stop all services
-docker-compose down
+### Deploy Steps
 
-# Stop and remove volumes (reset database)
-docker-compose down -v
-```
-
-### Services
-
-| Service    | Container Name     | Port  | Description               |
-|------------|--------------------|-------|---------------------------|
-| `backend`  | `vigil-backend`    | 5000  | Flask REST API (Gunicorn) |
-| `frontend` | `vigil-frontend`   | 5173  | React Dev Server (Vite)   |
-
-### Environment Variables
-
-| Variable        | Default                                        | Description              |
-|-----------------|-------------------------------------------------|--------------------------|
-| `SECRET_KEY`    | `vigil-super-secret-key-change-in-production`   | JWT signing secret       |
-| `DATABASE_URI`  | `sqlite:///vigil.db`                             | SQLAlchemy database URI  |
-| `VITE_API_URL`  | `http://localhost:5000/api`                      | Frontend API base URL    |
+1. Push the repository to GitHub
+2. Import the project on [vercel.com](https://vercel.com)
+3. Add the `SECRET_KEY` environment variable
+4. Click **Deploy**
 
 ---
 
