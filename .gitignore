@@ -1,0 +1,40 @@
+# ── Python / Flask ────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+backend/venv/
+venv/
+.venv/
+
+# SQLite database
+*.db
+backend/instance/
+
+# Environment variables
+.env
+
+# ── Node / React Frontend ────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# ── IDE / OS ─────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ── Docker ───────────────────────────────────────────────
+docker-compose.override.yml
+
+# ── Debug logs ───────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
