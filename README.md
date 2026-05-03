@@ -369,17 +369,13 @@ Authorization: Bearer <your_jwt_token>
 ### Local Development
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/Abdelrahman744/Vigil-v2-flask.git
-cd Vigil-v2-flask
-
-# 2. Backend setup
-cd backend
-python -m venv venv
-source venv/bin/activate        # On Windows: venv\Scripts\activate
+cd Vigil-v2-flask/backend
 pip install -r requirements.txt
-python app.py                   # Starts on http://localhost:5000
+python app.py
 ```
+
+The API will start on **http://localhost:5000**.
 
 ---
 
