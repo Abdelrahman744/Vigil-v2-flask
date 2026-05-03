@@ -3,7 +3,6 @@
   <img src="https://img.shields.io/badge/Flask-3.1-green?style=for-the-badge&logo=flask" alt="Flask Badge"/>
   <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React Badge"/>
   <img src="https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite" alt="SQLite Badge"/>
-  <img src="https://img.shields.io/badge/Vercel-Deployed-000?style=for-the-badge&logo=vercel" alt="Vercel Badge"/>
 </p>
 
 # 🛡️ Vigil — Website Uptime Monitoring System
@@ -14,7 +13,6 @@
 
 ## 📑 Table of Contents
 
-- [Team Members](#-team-members)
 - [Technology Stack](#-technology-stack)
 - [Project Structure](#-project-structure)
 - [Entity-Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
@@ -28,7 +26,6 @@
 
 ---
 
-
 ## 🛠 Technology Stack
 
 | Layer      | Technology                                     |
@@ -38,7 +35,6 @@
 | Database   | SQLite 3 (file-based relational DB)             |
 | Auth       | JWT (PyJWT) with Bearer Tokens                  |
 | Monitoring | Python `requests` library (HTTP pinging)        |
-| Deployment | Vercel (Serverless Python Runtime)              |
 
 ---
 
@@ -46,8 +42,6 @@
 
 ```
 Vigil-v2-flask/
-├── api/
-│   └── index.py                    # Vercel serverless entry point
 ├── backend/
 │   ├── app.py                      # Flask API (models, routes, monitoring)
 │   └── requirements.txt            # Python dependencies
@@ -63,8 +57,6 @@ Vigil-v2-flask/
 │   │       └── Dashboard.jsx       # Main dashboard (all other endpoints)
 │   ├── vite.config.js              # Vite + Tailwind plugin config
 │   └── package.json                # Node dependencies
-├── requirements.txt                # Root deps (for Vercel)
-├── vercel.json                     # Vercel routing & build config
 ├── .gitignore
 └── README.md
 ```
@@ -226,15 +218,15 @@ graph TB
 
 ```mermaid
 graph TB
-    Browser["🌐 Browser<br/>(React + Tailwind)"]
+    Browser["🌐 Browser"]
 
-    subgraph "Frontend (Vite Dev Server :5173)"
+    subgraph "Frontend (localhost:5173)"
         Login["Login Page"]
         Register["Register Page"]
         Dashboard["Dashboard Page"]
     end
 
-    subgraph "Backend (Flask API :5000)"
+    subgraph "Backend (localhost:5000)"
         Auth["Auth Module<br/>Register / Login / Logout"]
         Targets["Target Module<br/>CRUD + Stats"]
         Logs["Log Module<br/>History Retrieval"]
@@ -308,7 +300,7 @@ graph TB
 |---|--------|-------------------------------|--------|------------------------------------------------|-----------------|
 | 7 | GET    | `/api/targets/<id>/logs`      | ✅ Yes | Retrieve full check history for a target       | —               |
 | 8 | POST   | `/api/ping`                   | ✅ Yes | Manually ping any URL (no DB save)             | `{ "url" }`    |
-| 9 | GET    | `/api/cron/heartbeat`         | ❌ No  | Batch-check all targets (for Vercel Cron)      | —               |
+| 9 | GET    | `/api/cron/heartbeat`         | ❌ No  | Batch-check all targets (background job)       | —               |
 
 ### Authentication Header
 
@@ -480,7 +472,7 @@ The React frontend consumes all API endpoints listed above.
 - **Python 3.12+** and **Node.js 18+** installed
 - **Git** for cloning the repository
 
-### Local Development
+### Run Locally
 
 ```bash
 # Clone
@@ -505,7 +497,7 @@ npm run dev
 
 ## 📄 License
 
-This project is developed for academic purposes as part of a university software engineering course. All rights reserved by the team members listed above.
+This project is developed for academic purposes as part of a university software engineering course. All rights reserved.
 
 ---
 
