@@ -14,13 +14,15 @@
 ## 📑 Table of Contents
 
 - [Team Members](#-team-members)
-- [Project Architecture](#-project-architecture)
 - [Technology Stack](#-technology-stack)
-- [Database Schema (ERD)](#-database-schema-erd)
+- [Project Structure](#-project-structure)
+- [Entity-Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
+- [Data Flow Diagrams (DFD)](#-data-flow-diagrams-dfd)
+- [System Architecture](#-system-architecture)
+- [Database Schema](#-database-schema)
 - [API Documentation](#-api-documentation)
 - [Getting Started](#-getting-started)
 - [Docker Setup](#-docker-setup)
-- [Project Structure](#-project-structure)
 - [License](#-license)
 
 ---
@@ -39,32 +41,6 @@
 
 ---
 
-## 🏗 Project Architecture
-
-```
-┌──────────────────────┐         HTTP / JSON         ┌──────────────────────┐
-│                      │  ◄──────────────────────►   │                      │
-│   React + Tailwind   │        Port 5173            │    Flask REST API    │
-│      Frontend        │                             │       Backend        │
-│                      │    Authorization: Bearer     │                      │
-│   (Vite Dev Server)  │  ──────────────────────►    │   (Gunicorn WSGI)   │
-│                      │                             │                      │
-└──────────────────────┘                             └──────────┬───────────┘
-                                                                │
-                                                                │ SQLAlchemy ORM
-                                                                ▼
-                                                     ┌──────────────────────┐
-                                                     │      SQLite DB       │
-                                                     │    (vigil.db)        │
-                                                     │                      │
-                                                     │  • User              │
-                                                     │  • Target            │
-                                                     │  • Log               │
-                                                     └──────────────────────┘
-```
-
----
-
 ## 🛠 Technology Stack
 
 | Layer      | Technology                           |
@@ -78,23 +54,185 @@
 
 ---
 
-## 🗃 Database Schema (ERD)
+## 📁 Project Structure
 
-The application uses **3 normalized tables** with the following relationships:
+```
+Vigil-v2-flask/
+├── backend/
+│   ├── app.py                  # Flask application (models + routes)
+│   ├── requirements.txt        # Python dependencies
+│   └── Dockerfile              # Backend container image
+├── frontend/
+│   ├── src/                    # React components & pages
+│   ├── package.json            # Node dependencies
+│   └── Dockerfile              # Frontend container image
+├── docker-compose.yml          # Multi-service orchestration
+├── .gitignore
+└── README.md                   # This file
+```
 
-| Table    | Columns                                        | Constraints                            |
-|----------|------------------------------------------------|----------------------------------------|
-| `User`   | `id` PK, `username` UNIQUE, `email` UNIQUE, `password_hash` | Primary entity                |
-| `Target` | `id` PK, `name`, `url`, `status`, `user_id` FK | Composite UNIQUE (`user_id`, `url`)    |
-| `Log`    | `id` PK, `target_id` FK, `timestamp`, `details`| Cascade delete with Target             |
+---
 
-> **Key Design Decision:** The `url` column is NOT globally unique. A composite unique constraint on `(user_id, url)` ensures the same user cannot track a duplicate URL, while different users are free to monitor the same website independently.
+## 🗃 Entity-Relationship Diagram (ERD)
+
+The application uses **3 normalized tables**. The `url` column is **NOT** globally unique — a composite unique constraint on `(user_id, url)` ensures each user cannot track a duplicate URL, while different users can independently monitor the same website.
+
+```mermaid
+erDiagram
+    USER ||--o{ TARGET : "owns"
+    TARGET ||--o{ LOG : "has"
+
+    USER {
+        int id PK
+        string username UK "Unique"
+        string email UK "Unique"
+        string password_hash
+    }
+
+    TARGET {
+        int id PK
+        string name
+        string url
+        string status
+        int user_id FK "References User.id"
+    }
+
+    LOG {
+        int id PK
+        int target_id FK "References Target.id"
+        datetime timestamp
+        text details
+    }
+```
+
+---
+
+## 📊 Data Flow Diagrams (DFD)
+
+### Level 0 — Context Diagram
+
+Shows the system as a single process interacting with the external user and the database.
+
+```mermaid
+graph LR
+    subgraph External
+        U["👤 User (Browser)"]
+    end
+
+    subgraph "Vigil System"
+        API["🛡️ Vigil Flask API"]
+    end
+
+    subgraph Storage
+        DB[("📦 SQLite Database")]
+    end
+
+    U -- "Register / Login" --> API
+    U -- "Add / Delete / List Targets" --> API
+    U -- "View Logs" --> API
+    API -- "JWT Token" --> U
+    API -- "JSON Responses" --> U
+    API -- "Read / Write" --> DB
+```
+
+### Level 1 — Process Decomposition
+
+Breaks down the system into its three core subsystems: Authentication, Target Management, and Log Retrieval, showing data flows between each process and the database tables.
+
+```mermaid
+graph TB
+    User["👤 User"]
+
+    subgraph "1.0 Authentication"
+        P1["1.1 Register"]
+        P2["1.2 Login"]
+        P3["1.3 Logout"]
+    end
+
+    subgraph "2.0 Target Management"
+        P4["2.1 List Targets"]
+        P5["2.2 Add Target"]
+        P6["2.3 Delete Target"]
+    end
+
+    subgraph "3.0 Log Retrieval"
+        P7["3.1 Get Target Logs"]
+    end
+
+    DB_User[("User Table")]
+    DB_Target[("Target Table")]
+    DB_Log[("Log Table")]
+
+    User -->|"credentials"| P1
+    User -->|"credentials"| P2
+    User -->|"token"| P3
+
+    P1 -->|"INSERT"| DB_User
+    P1 -->|"JWT token"| User
+    P2 -->|"SELECT"| DB_User
+    P2 -->|"JWT token"| User
+
+    User -->|"auth request"| P4
+    User -->|"name, url"| P5
+    User -->|"target_id"| P6
+
+    P4 -->|"SELECT"| DB_Target
+    P4 -->|"SELECT latest"| DB_Log
+    P4 -->|"target list"| User
+
+    P5 -->|"INSERT"| DB_Target
+    P5 -->|"INSERT initial"| DB_Log
+    P5 -->|"new target"| User
+
+    P6 -->|"DELETE cascade"| DB_Target
+    P6 -->|"DELETE"| DB_Log
+    P6 -->|"confirmation"| User
+
+    User -->|"target_id"| P7
+    P7 -->|"SELECT"| DB_Log
+    P7 -->|"log history"| User
+```
+
+---
+
+## 🏗 System Architecture
+
+```mermaid
+graph TB
+    subgraph "Docker Compose"
+        subgraph "vigil-frontend :5173"
+            FE["React + Tailwind<br/>Node 20 Alpine<br/>Vite Dev Server"]
+        end
+        subgraph "vigil-backend :5000"
+            BE["Flask API<br/>Python 3.12 Slim<br/>Gunicorn - 4 workers"]
+        end
+        subgraph "Volume: backend-data"
+            VOL[("vigil.db<br/>SQLite")]
+        end
+    end
+
+    FE -->|"depends_on"| BE
+    BE -->|"SQLAlchemy ORM"| VOL
+
+    Browser["🌐 Browser"] -->|":5173"| FE
+    Browser -->|":5000/api"| BE
+```
+
+---
+
+## 🗃 Database Schema
+
+| Table    | Columns                                                         | Constraints                            |
+|----------|-----------------------------------------------------------------|----------------------------------------|
+| `User`   | `id` PK, `username` UNIQUE, `email` UNIQUE, `password_hash`    | Primary entity                         |
+| `Target` | `id` PK, `name`, `url`, `status`, `user_id` FK                 | Composite UNIQUE (`user_id`, `url`)    |
+| `Log`    | `id` PK, `target_id` FK, `timestamp`, `details`                | Cascade delete with Target             |
 
 ---
 
 ## 📡 API Documentation
 
-**Base URL:** `http://localhost:5000/api`
+**Base URL:** `http://localhost:5000`
 
 ### Authentication Endpoints
 
@@ -157,6 +295,17 @@ Authorization: Bearer <your_jwt_token>
 </details>
 
 <details>
+<summary><strong>POST /api/logout — 200 OK</strong></summary>
+
+```json
+{
+  "status": "success",
+  "message": "Logged out successfully"
+}
+```
+</details>
+
+<details>
 <summary><strong>GET /api/targets — 200 OK</strong></summary>
 
 ```json
@@ -172,6 +321,31 @@ Authorization: Bearer <your_jwt_token>
       "last_checked": "2026-05-03T17:00:00"
     }
   ]
+}
+```
+</details>
+
+<details>
+<summary><strong>POST /api/targets — 201 Created</strong></summary>
+
+```json
+{
+  "id": 2,
+  "name": "GitHub",
+  "url": "https://github.com",
+  "status": "Pending",
+  "user_id": 1
+}
+```
+</details>
+
+<details>
+<summary><strong>DELETE /api/targets/1 — 200 OK</strong></summary>
+
+```json
+{
+  "status": "success",
+  "message": "Target deleted successfully"
 }
 ```
 </details>
@@ -207,8 +381,8 @@ Authorization: Bearer <your_jwt_token>
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/vigil-v2.git
-cd vigil-v2
+git clone https://github.com/your-org/vigil-v2-flask.git
+cd vigil-v2-flask
 
 # 2. Backend setup
 cd backend
@@ -252,29 +426,11 @@ docker-compose down -v
 
 ### Environment Variables
 
-| Variable        | Default                                    | Description              |
-|-----------------|--------------------------------------------|--------------------------|
-| `SECRET_KEY`    | `vigil-super-secret-key-change-in-production` | JWT signing secret    |
-| `DATABASE_URI`  | `sqlite:///vigil.db`                       | SQLAlchemy database URI  |
-| `VITE_API_URL`  | `http://localhost:5000/api`                | Frontend API base URL    |
-
----
-
-## 📁 Project Structure
-
-```
-vigil-v2-flask/
-├── backend/
-│   ├── app.py                  # Flask application (models + routes)
-│   ├── requirements.txt        # Python dependencies
-│   └── Dockerfile              # Backend container image
-├── frontend/
-│   ├── src/                    # React components & pages
-│   ├── package.json            # Node dependencies
-│   └── Dockerfile              # Frontend container image
-├── docker-compose.yml          # Multi-service orchestration
-└── README.md                   # This file
-```
+| Variable        | Default                                        | Description              |
+|-----------------|-------------------------------------------------|--------------------------|
+| `SECRET_KEY`    | `vigil-super-secret-key-change-in-production`   | JWT signing secret       |
+| `DATABASE_URI`  | `sqlite:///vigil.db`                             | SQLAlchemy database URI  |
+| `VITE_API_URL`  | `http://localhost:5000/api`                      | Frontend API base URL    |
 
 ---
 
