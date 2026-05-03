@@ -371,7 +371,7 @@ Authorization: Bearer <your_jwt_token>
 ```bash
 git clone https://github.com/Abdelrahman744/Vigil-v2-flask.git
 cd Vigil-v2-flask/backend
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python app.py
 ```
 
