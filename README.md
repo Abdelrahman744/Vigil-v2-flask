@@ -28,19 +28,6 @@
 
 ---
 
-## 👥 Team Members
-
-| #  | Name                        | Role                  | ID          |
-|----|-----------------------------|-----------------------|-------------|
-| 1  | Abdelrahman Mohamed Ahmed   | Team Lead / Backend   | 20220302    |
-| 2  | Omar Khaled Hassan          | Frontend Developer    | 20220188    |
-| 3  | Youssef Ali Ibrahim         | Backend Developer     | 20220415    |
-| 4  | Nour ElDin Mahmoud Saad     | Database Engineer     | 20220356    |
-| 5  | Malak Tarek Abdallah        | UI/UX Designer        | 20220274    |
-| 6  | Ahmed Mostafa Sayed         | DevOps Engineer       | 20220045    |
-| 7  | Sara Hesham Mohamed         | QA / Documentation    | 20220331    |
-
----
 
 ## 🛠 Technology Stack
 
