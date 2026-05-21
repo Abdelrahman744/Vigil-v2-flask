@@ -504,6 +504,8 @@ npm run dev
 - **Backend API:** http://localhost:5000
 - **Frontend UI:** http://localhost:5173
 
+> **Note:** When running the backend via `python run.py`, a background thread automatically starts. It triggers the `/api/cron/heartbeat` endpoint every 60 seconds and logs the real-time status of all your tracked targets directly in the terminal, simulating a production cron job!
+
 ---
 
 ## 📄 License

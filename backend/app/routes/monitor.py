@@ -23,7 +23,7 @@ def cron_heartbeat():
         res = check_url(t.url)
         t.status = res["status"]
         create_log_from_result(t.id, res)
-        results.append({"id": t.id, "url": t.url, "status": res["status"], "latency": res["response_time"]})
+        results.append({"id": t.id, "name": t.name, "url": t.url, "status": res["status"], "latency": res["response_time"]})
 
     db.session.commit()
     return jsonify({"message": "Heartbeat completed", "checked": len(results), "results": results}), 200
