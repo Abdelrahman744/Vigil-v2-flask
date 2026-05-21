@@ -43,19 +43,29 @@
 ```
 Vigil-v2-flask/
 ├── backend/
-│   ├── app.py                      # Flask API (models, routes, monitoring)
+│   ├── app/
+│   │   ├── __init__.py             # Flask Application Factory
+│   │   ├── models.py               # SQLAlchemy Database Models (User, Target, Log)
+│   │   ├── utils.py                # Monitoring helpers (pings), auth decorators & JWT helpers
+│   │   └── routes/
+│   │       ├── __init__.py
+│   │       ├── auth.py             # Auth Blueprint (register, login, logout)
+│   │       ├── targets.py          # Target Blueprint (CRUD + manual ping)
+│   │       └── monitor.py          # Monitor Blueprint (cron heartbeat check)
+│   ├── config.py                   # Centralised configuration
+│   ├── run.py                      # Development server entry point
 │   └── requirements.txt            # Python dependencies
 ├── frontend/
 │   ├── src/
 │   │   ├── api.js                  # Axios client with JWT interceptor
 │   │   ├── App.jsx                 # Router & protected routes
 │   │   ├── main.jsx                # React entry point
-│   │   ├── index.css               # Tailwind v4 theme & global styles
+│   │   ├── index.css               # Vanilla CSS styling & themes
 │   │   └── pages/
-│   │       ├── Login.jsx           # Login page (POST /api/login)
-│   │       ├── Register.jsx        # Register page (POST /api/register)
-│   │       └── Dashboard.jsx       # Main dashboard (all other endpoints)
-│   ├── vite.config.js              # Vite + Tailwind plugin config
+│   │       ├── Login.jsx           # Login page
+│   │       ├── Register.jsx        # Register page (email-uniqueness check)
+│   │       └── Dashboard.jsx       # Interactive real-time monitoring dashboard
+│   ├── vite.config.js              # Vite bundler config
 │   └── package.json                # Node dependencies
 ├── .gitignore
 └── README.md
@@ -201,15 +211,18 @@ graph TB
     P7 -->|"SELECT"| DB_Log
     P7 -->|"log history"| User
 
-    User -->|"url"| P8
+    User -->|"target_id"| P8
     P8 -->|"HTTP GET"| Web
     Web -->|"status + latency"| P8
+    P8 -->|"INSERT check result"| DB_Log
+    P8 -->|"UPDATE target status"| DB_Target
     P8 -->|"ping result"| User
 
     P9 -->|"SELECT all"| DB_Target
     P9 -->|"HTTP GET each"| Web
     Web -->|"status + latency"| P9
     P9 -->|"INSERT results"| DB_Log
+    P9 -->|"UPDATE target status"| DB_Target
 ```
 
 ---
@@ -228,9 +241,8 @@ graph TB
 
     subgraph "Backend (localhost:5000)"
         Auth["Auth Module<br/>Register / Login / Logout"]
-        Targets["Target Module<br/>CRUD + Stats"]
-        Logs["Log Module<br/>History Retrieval"]
-        Monitor["Monitor Module<br/>HTTP Ping + Cron"]
+        Targets["Target Module<br/>CRUD + Stats + Manual Ping"]
+        Monitor["Monitor Module<br/>Cron Heartbeat"]
     end
 
     subgraph "Database"
@@ -251,15 +263,14 @@ graph TB
     Dashboard -->|"GET /api/targets"| Targets
     Dashboard -->|"POST /api/targets"| Targets
     Dashboard -->|"DELETE /api/targets/id"| Targets
-    Dashboard -->|"GET /api/targets/id/logs"| Logs
-    Dashboard -->|"POST /api/ping"| Monitor
+    Dashboard -->|"GET /api/targets/id/logs"| Targets
+    Dashboard -->|"POST /api/targets/id/ping"| Targets
 
     Auth -->|"Read / Write"| DB
     Targets -->|"Read / Write"| DB
-    Logs -->|"Read"| DB
-    Monitor -->|"Write"| DB
-    Monitor -->|"HTTP GET"| Web
-    Targets -->|"HTTP GET on Add"| Web
+    Targets -->|"HTTP GET (Pings)"| Web
+    Monitor -->|"Read / Write"| DB
+    Monitor -->|"HTTP GET (Pings)"| Web
 ```
 
 ---
@@ -299,7 +310,7 @@ graph TB
 | # | Method | Endpoint                      | Auth?  | Description                                    | Request Body    |
 |---|--------|-------------------------------|--------|------------------------------------------------|-----------------|
 | 7 | GET    | `/api/targets/<id>/logs`      | ✅ Yes | Retrieve full check history for a target       | —               |
-| 8 | POST   | `/api/ping`                   | ✅ Yes | Manually ping any URL (no DB save)             | `{ "url" }`    |
+| 8 | POST   | `/api/targets/<id>/ping`      | ✅ Yes | Manually ping a tracked target (saves to DB)  | —               |
 | 9 | GET    | `/api/cron/heartbeat`         | ❌ No  | Batch-check all targets (background job)       | —               |
 
 ### Authentication Header
@@ -433,10 +444,11 @@ Authorization: Bearer <your_jwt_token>
 </details>
 
 <details>
-<summary><strong>POST /api/ping — 200 OK</strong></summary>
+<summary><strong>POST /api/targets/&lt;id&gt;/ping — 200 OK</strong></summary>
 
 ```json
 {
+  "status": "success",
   "message": "Ping Up",
   "data": {
     "status": "Up",
@@ -459,9 +471,9 @@ The React frontend consumes all API endpoints listed above.
 |-------------|---------------|---------------------------------------------|
 | **Login**   | `/login`      | `POST /api/login`                           |
 | **Register**| `/register`   | `POST /api/register`                        |
-| **Dashboard** | `/dashboard` | `POST /api/logout`, `GET /api/targets`, `POST /api/targets`, `DELETE /api/targets/<id>`, `GET /api/targets/<id>/logs`, `POST /api/ping` |
+| **Dashboard** | `/dashboard` | `POST /api/logout`, `GET /api/targets`, `POST /api/targets`, `DELETE /api/targets/<id>`, `GET /api/targets/<id>/logs`, `POST /api/targets/<id>/ping` |
 
-**Total: 8 endpoints used across the frontend (7 core + 1 bonus).**
+**Total: 8 endpoints used across the frontend (all core).**
 
 ---
 
@@ -482,7 +494,7 @@ cd Vigil-v2-flask
 # Backend (Terminal 1)
 cd backend
 python -m pip install -r requirements.txt
-python app.py
+python run.py
 
 # Frontend (Terminal 2)
 cd frontend
