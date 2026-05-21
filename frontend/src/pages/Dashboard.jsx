@@ -46,8 +46,15 @@ export default function Dashboard() {
   const handleAddTarget = async (e) => {
     e.preventDefault();
     setAddLoading(true);
+
+    // Auto-prepend https:// if the user didn't include a protocol
+    let finalUrl = newTargetUrl.trim();
+    if (!/^https?:\/\//i.test(finalUrl)) {
+      finalUrl = `https://${finalUrl}`;
+    }
+
     try {
-      await api.post('/targets', { name: newTargetName, url: newTargetUrl });
+      await api.post('/targets', { name: newTargetName, url: finalUrl });
       setIsAddModalOpen(false);
       setNewTargetName('');
       setNewTargetUrl('');
@@ -84,15 +91,13 @@ export default function Dashboard() {
     }
   };
 
-  const handleManualPing = async (url, e) => {
+  const handleManualPing = async (target, e) => {
     e.stopPropagation();
     try {
-      alert('Pinging...');
-      const res = await api.post('/ping', { url });
-      alert(`Ping result: ${res.data.data.status} (${res.data.data.response_time}ms)`);
-      fetchTargets(); // Refresh to get updated stats if the cron wasn't used
+      await api.post(`/targets/${target.id}/ping`);
+      fetchTargets();
     } catch (err) {
-      alert(`Ping failed: ${err.response?.data?.data?.error_message || 'Unknown error'}`);
+      console.error('Ping failed:', err);
     }
   };
 
@@ -245,7 +250,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex gap-2">
                       <button 
-                        onClick={(e) => handleManualPing(target.url, e)}
+                        onClick={(e) => handleManualPing(target, e)}
                         className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
                         title="Manual Ping"
                       >
@@ -299,8 +304,8 @@ export default function Dashboard() {
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-1">URL to Monitor</label>
                     <input 
-                      type="url" required value={newTargetUrl} onChange={e => setNewTargetUrl(e.target.value)}
-                      placeholder="https://example.com"
+                      type="text" required value={newTargetUrl} onChange={e => setNewTargetUrl(e.target.value)}
+                      placeholder="example.com"
                       className="w-full bg-black/20 border border-gray-700 rounded-xl py-2.5 px-4 text-white placeholder-gray-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                     />
                   </div>
