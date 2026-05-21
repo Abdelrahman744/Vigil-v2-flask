@@ -137,7 +137,7 @@ graph LR
     end
 
     U -- "Register / Login" --> API
-    U -- "Add / Delete / List Targets" --> API
+    U -- "Add / Delete / List / Ping Targets" --> API
     U -- "View Logs & Stats" --> API
     API -- "JWT Token" --> U
     API -- "JSON Responses" --> U
@@ -148,7 +148,7 @@ graph LR
 
 ### Level 1 — Process Decomposition
 
-Breaks down the system into its four core subsystems showing data flows between each process and the database tables.
+Breaks down the system into its three core subsystems showing data flows between each process and the database tables.
 
 ```mermaid
 graph TB
@@ -165,15 +165,12 @@ graph TB
         P4["2.1 List Targets + Stats"]
         P5["2.2 Add Target + Ping"]
         P6["2.3 Delete Target"]
+        P7["2.4 Get Target Logs"]
+        P8["2.5 Manual Ping"]
     end
 
-    subgraph "3.0 Log Retrieval"
-        P7["3.1 Get Target Logs"]
-    end
-
-    subgraph "4.0 Monitoring"
-        P8["4.1 Manual Ping"]
-        P9["4.2 Cron Heartbeat"]
+    subgraph "3.0 Monitoring"
+        P9["3.1 Cron Heartbeat"]
     end
 
     DB_User[("User Table")]
@@ -232,6 +229,7 @@ graph TB
 ```mermaid
 graph TB
     Browser["🌐 Browser"]
+    CronJob["⏱️ External Cron Job"]
 
     subgraph "Frontend (localhost:5173)"
         Login["Login Page"]
@@ -256,6 +254,7 @@ graph TB
     Browser --> Login
     Browser --> Register
     Browser --> Dashboard
+    CronJob -->|"GET /api/cron/heartbeat"| Monitor
 
     Login -->|"POST /api/login"| Auth
     Register -->|"POST /api/register"| Auth
