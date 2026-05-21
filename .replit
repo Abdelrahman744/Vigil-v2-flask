@@ -1,0 +1,16 @@
+modules = ["python-3.10", "nodejs-18"]
+
+[nix]
+channel = "stable-23_11"
+
+[env]
+# Prevents Python from writing heavy .pyc files
+PYTHONDONTWRITEBYTECODE = "1" 
+
+# Override Replit's default heavy install commands
+[packager]
+ignoredPackages = ["*"]
+# We will handle installs manually in the run script to avoid background quota drain
+language = "bash"
+
+run = "bash start.sh"
