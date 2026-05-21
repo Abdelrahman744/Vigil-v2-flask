@@ -88,7 +88,7 @@ erDiagram
 
     USER {
         int id PK
-        string username UK "Unique"
+        string username
         string email UK "Unique"
         string password_hash
     }
@@ -279,7 +279,7 @@ graph TB
 
 | Table    | Columns                                                                                              | Constraints                            |
 |----------|------------------------------------------------------------------------------------------------------|----------------------------------------|
-| `User`   | `id` PK, `username` UNIQUE, `email` UNIQUE, `password_hash`                                         | Primary entity                         |
+| `User`   | `id` PK, `username`, `email` UNIQUE, `password_hash`                                         | Primary entity                         |
 | `Target` | `id` PK, `name`, `url`, `status`, `user_id` FK                                                      | Composite UNIQUE (`user_id`, `url`)    |
 | `Log`    | `id` PK, `target_id` FK, `timestamp`, `status`, `response_time`, `status_code`, `error_message`, `details` | Cascade delete with Target             |
 
