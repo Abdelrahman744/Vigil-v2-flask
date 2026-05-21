@@ -15,12 +15,12 @@ def start_heartbeat_loop():
     while True:
         time.sleep(60)
         try:
-            print("\n[Vigil Cron] Triggering background heartbeat 🫀🏃‍♂️‍➡️")
+            print("\n[Vigil Cron] Triggering background heartbeat 🫀 ⏳")
             res = requests.get("http://127.0.0.1:5000/api/cron/heartbeat", timeout=60)
             data = res.json()
             print(f"[Vigil Cron] Heartbeat complete  — Checked {data.get('checked', 0)} targets.")
             for r in data.get("results", []):
-                icon = "✔️[UP]" if r['status'] == 'Up' else "❌[DOWN]"
+                icon = "✔️  [UP]" if r['status'] == 'Up' else "❌  [DOWN]"
                 print(f"  {icon} Target {r['id']} ({r['name']}): {r['status']} ({r['latency']}ms)")
             print()
         except Exception as e:

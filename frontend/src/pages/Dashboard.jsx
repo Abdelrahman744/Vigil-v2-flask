@@ -20,6 +20,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchTargets();
+    // Poll the backend every 30 seconds to catch cron job updates automatically
+    const intervalId = setInterval(() => {
+      fetchTargets();
+    }, 30000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchTargets = async () => {
