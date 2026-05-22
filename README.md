@@ -11,22 +11,22 @@
 
 ---
 
-## 📑 Table of Contents
+## 📑 Table of Contents.
 
-- [Technology Stack](#-technology-stack)
-- [Project Structure](#-project-structure)
-- [Entity-Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
-- [Data Flow Diagrams (DFD)](#-data-flow-diagrams-dfd)
-- [System Architecture](#-system-architecture)
-- [Database Schema](#-database-schema)
-- [API Documentation](#-api-documentation)
-- [Frontend Pages](#-frontend-pages)
-- [Getting Started](#-getting-started)
-- [License](#-license)
+- [Technology Stack](#-technology-stack.)
+- [Project Structure](#-project-structure.)
+- [Entity-Relationship Diagram (ERD)](#-entity-relationship-diagram-erd.)
+- [Data Flow Diagrams (DFD)](#-data-flow-diagrams-dfd.)
+- [System Architecture](#-system-architecture.)
+- [Database Schema](#-database-schema.)
+- [API Documentation](#-api-documentation.)
+- [Frontend Pages](#-frontend-pages.)
+- [Getting Started](#-getting-started.)
+- [License](#-license.)
 
 ---
 
-## 🛠 Technology Stack
+## 🛠 Technology Stack.
 
 | Layer      | Technology                                     |
 |------------|-------------------------------------------------|
@@ -38,23 +38,22 @@
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure.
 
 ```
 Vigil-v2-flask/
 ├── backend/
-│   ├── app/
-│   │   ├── __init__.py             # Flask Application Factory
-│   │   ├── models.py               # SQLAlchemy Database Models (User, Target, Log)
-│   │   ├── utils.py                # Monitoring helpers (pings), auth decorators & JWT helpers
-│   │   └── routes/
-│   │       ├── __init__.py
-│   │       ├── auth.py             # Auth Blueprint (register, login, logout)
-│   │       ├── targets.py          # Target Blueprint (CRUD + manual ping)
-│   │       └── monitor.py          # Monitor Blueprint (cron heartbeat check)
-│   ├── config.py                   # Centralised configuration
-│   ├── run.py                      # Development server entry point
-│   └── requirements.txt            # Python dependencies
+│   ├── app.py                  # Flask Application Entry Point & Factory
+│   ├── model.py                # SQLAlchemy Database Models (User, Target, Log)
+│   ├── utils.py                # Monitoring helpers (pings), auth decorators & JWT helpers
+│   ├── secret.env              # Secret environment configuration variables
+│   ├── .flaskenv               # Flask environment configuration variables
+│   ├── routes/                 # Blueprint routing modules
+│   │   ├── __init__.py
+│   │   ├── auth.py             # Auth Blueprint (register, login, logout)
+│   │   ├── targets.py          # Target Blueprint (CRUD + stats + manual ping)
+│   │   └── monitor.py          # Monitor Blueprint (cron heartbeat check)
+│   └── requirements.txt        # Python dependencies
 ├── frontend/
 │   ├── src/
 │   │   ├── api.js                  # Axios client with JWT interceptor
@@ -73,7 +72,7 @@ Vigil-v2-flask/
 
 ---
 
-## 🗃 Entity-Relationship Diagram (ERD)
+## 🗃 Entity-Relationship Diagram (ERD).
 
 The application uses **3 normalized tables** with the following relationships:
 
@@ -115,7 +114,7 @@ erDiagram
 
 ---
 
-## 📊 Data Flow Diagrams (DFD)
+## 📊 Data Flow Diagrams (DFD).
 
 ### Level 0 — Context Diagram
 
@@ -224,7 +223,7 @@ graph TB
 
 ---
 
-## 🏗 System Architecture
+## 🏗 System Architecture.
 
 ```mermaid
 graph TB
@@ -274,7 +273,7 @@ graph TB
 
 ---
 
-## 🗃 Database Schema
+## 🗃 Database Schema.
 
 | Table    | Columns                                                                                              | Constraints                            |
 |----------|------------------------------------------------------------------------------------------------------|----------------------------------------|
@@ -284,7 +283,7 @@ graph TB
 
 ---
 
-## 📡 API Documentation
+## 📡 API Documentation.
 
 **Base URL:** `http://localhost:5000`
 
@@ -462,7 +461,7 @@ Authorization: Bearer <your_jwt_token>
 
 ---
 
-## 🖥 Frontend Pages
+## 🖥 Frontend Pages.
 
 The React frontend consumes all API endpoints listed above.
 
@@ -476,7 +475,7 @@ The React frontend consumes all API endpoints listed above.
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started.
 
 ### Prerequisites
 
@@ -493,7 +492,7 @@ cd Vigil-v2-flask
 # Backend (Terminal 1)
 cd backend
 python -m pip install -r requirements.txt
-python run.py
+python app.py
 
 # Frontend (Terminal 2)
 cd frontend
@@ -504,11 +503,11 @@ npm run dev
 - **Backend API:** http://localhost:5000
 - **Frontend UI:** http://localhost:5173
 
-> **Note:** When running the backend via `python run.py`, a background thread automatically starts. It triggers the `/api/cron/heartbeat` endpoint every 60 seconds and logs the real-time status of all your tracked targets directly in the terminal, simulating a production cron job!
+> **Note:** When running the backend via `python app.py`, a background thread automatically starts. It triggers the `/api/cron/heartbeat` endpoint every 60 seconds and logs the real-time status of all your tracked targets directly in the terminal, simulating a production cron job!
 
 ---
 
-## 📄 License
+## 📄 License.
 
 This project is developed for academic purposes as part of a university software engineering course. All rights reserved.
 
