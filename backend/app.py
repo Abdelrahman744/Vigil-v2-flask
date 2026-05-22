@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 
 def create_app():
-    """Application factory: builds, configures, and returns the Flask app."""
+
     app = Flask(__name__)
 
     # Load environment files

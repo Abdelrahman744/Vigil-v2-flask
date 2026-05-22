@@ -57,9 +57,6 @@ def check_url(url: str) -> dict:
 # JWT Authentication Helpers
 # ---------------------------------------------------------------------------
 
-_blacklisted_tokens: set = set()
-
-
 def generate_token(user_id: int) -> str:
     """Create a JWT token valid for 30 days."""
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -83,9 +80,6 @@ def token_required(f):
         if not token:
             return jsonify({"status": "fail", "message": "Token is missing"}), 401
 
-        if token in _blacklisted_tokens:
-            return jsonify({"status": "fail", "message": "Token has been revoked"}), 401
-
         try:
             data = pyjwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
             g.current_user = db.session.get(User, data["user_id"])
@@ -98,11 +92,6 @@ def token_required(f):
 
         return f(*args, **kwargs)
     return decorated
-
-
-def blacklist_token(token: str):
-    """Add a token to the in-memory blacklist."""
-    _blacklisted_tokens.add(token)
 
 
 def create_log_from_result(target_id: int, result: dict):

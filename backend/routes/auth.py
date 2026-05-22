@@ -7,7 +7,7 @@ Vigil — Auth Routes
 from flask import Blueprint, request, jsonify
 
 from model import db, User
-from utils import generate_token, token_required, blacklist_token
+from utils import generate_token, token_required
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -56,7 +56,4 @@ def login():
 @auth_bp.route("/api/logout", methods=["POST"])
 @token_required
 def logout():
-    auth_header = request.headers.get("Authorization", "")
-    token = auth_header.split(" ", 1)[1]
-    blacklist_token(token)
     return jsonify({"status": "success", "message": "Logged out successfully"}), 200
