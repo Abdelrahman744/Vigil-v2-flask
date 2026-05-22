@@ -6,9 +6,8 @@ Vigil — Monitor Routes
 
 from flask import Blueprint, jsonify
 
-from app import db
-from app.models import Target
-from app.utils import check_url, create_log_from_result
+from model import db, Target
+from utils import check_url, create_log_from_result
 
 monitor_bp = Blueprint("monitor", __name__)
 

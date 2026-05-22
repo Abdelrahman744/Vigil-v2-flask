@@ -12,8 +12,7 @@ import requests as http_requests
 import jwt as pyjwt
 from flask import request, jsonify, g, current_app
 
-from app import db
-from app.models import User
+from model import db, User
 
 
 # ---------------------------------------------------------------------------
@@ -108,7 +107,7 @@ def blacklist_token(token: str):
 
 def create_log_from_result(target_id: int, result: dict):
     """Create a Log entry from a check_url result dict and add it to the session."""
-    from app.models import Log
+    from model import Log
     log = Log(
         target_id=target_id,
         status=result["status"],

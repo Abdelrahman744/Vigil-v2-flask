@@ -6,9 +6,8 @@ Vigil — Target Routes
 
 from flask import Blueprint, request, jsonify, g
 
-from app import db
-from app.models import Target, Log
-from app.utils import check_url, token_required, create_log_from_result
+from model import db, Target, Log
+from utils import check_url, token_required, create_log_from_result
 
 targets_bp = Blueprint("targets", __name__)
 

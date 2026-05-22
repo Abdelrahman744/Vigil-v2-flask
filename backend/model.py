@@ -6,7 +6,9 @@ User, Target, and Log models for the uptime monitoring database.
 
 import datetime
 from typing import Optional
-from app import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 from werkzeug.security import generate_password_hash, check_password_hash
 
 

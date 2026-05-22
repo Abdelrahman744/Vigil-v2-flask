@@ -6,9 +6,8 @@ Vigil — Auth Routes
 
 from flask import Blueprint, request, jsonify
 
-from app import db
-from app.models import User
-from app.utils import generate_token, token_required, blacklist_token
+from model import db, User
+from utils import generate_token, token_required, blacklist_token
 
 auth_bp = Blueprint("auth", __name__)
 
