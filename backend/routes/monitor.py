@@ -14,7 +14,7 @@ monitor_bp = Blueprint("monitor", __name__)
 
 @monitor_bp.route("/api/cron/heartbeat", methods=["GET"])
 def cron_heartbeat():
-    """Background job endpoint to check ALL targets. Triggered by Vercel Cron."""
+    """Background job endpoint to check ALL targets"""
     targets = Target.query.all()
     results = []
 

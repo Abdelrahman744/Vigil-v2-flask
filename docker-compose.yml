@@ -1,0 +1,43 @@
+services:
+  # ── Flask API Backend ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vigil-backend
+    restart: unless-stopped
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - DATABASE_URI=sqlite:////app/instance/vigil.db
+      - SECRET_KEY=vigil-super-secret-key-change-me
+    volumes:
+      - vigil-db:/app/instance
+    ports:
+      - "5000:5000"
+    networks:
+      - vigil-network
+
+  # ── React Frontend (Nginx Proxy) ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vigil-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - vigil-network
+
+# ── Persistent Volumes ────────────────────────────────────────
+volumes:
+  vigil-db:
+    driver: local
+
+# ── Shared Network ────────────────────────────────────────────
+networks:
+  vigil-network:
+    driver: bridge
